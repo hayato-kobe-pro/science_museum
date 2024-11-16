@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学館ポータル - みんなの科学館</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2C3E50;
+            --secondary-color: #3498DB;
+            --accent-color: #E74C3C;
+            --light-gray: #ECF0F1;
+            --success-color: #2ECC71;
+            --warning-color: #F1C40F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* カテゴリーナビゲーション */
+        .category-nav {
+            background: var(--light-gray);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .category-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1.5rem;
+            overflow-x: auto;
+            padding: 0 2rem;
+        }
+
+        .category-item {
+            padding: 0.5rem 1.5rem;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.3s;
+        }
+
+        .category-item:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('/api/placeholder/1200/400');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .search-bar {
+            max-width: 600px;
+            margin: 2rem auto;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 1rem;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .btn {
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .featured-section {
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+        }
+
+        .view-all {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .event-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--accent-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .available-now {
+            background: var(--success-color);
+        }
+
+        .members-only {
+            background: var(--warning-color);
+        }
+
+        .event-image {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #ddd;
+            overflow: hidden;
+        }
+
+        .event-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .event-content {
+            padding: 1.5rem;
+        }
+
+        .event-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .event-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        /* 地域別セクション */
+        .region-section {
+            background: var(--light-gray);
+            padding: 3rem 0;
+        }
+
+        .region-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .region-tab {
+            padding: 0.5rem 1.5rem;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .region-tab.active {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        /* ランキング */
+        .ranking-list {
+            counter-reset: ranking;
+        }
+
+        .ranking-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            align-items: center;
+        }
+
+        .ranking-item::before {
+            counter-increment: ranking;
+            content: counter(ranking);
+            background: var(--primary-color);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* 特集記事 */
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .article-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .article-content {
+            padding: 1.5rem;
+        }
+
+        /* 会員限定セクション */
+        .members-section {
+            background: linear-gradient(rgba(44,62,80,0.9), rgba(44,62,80,0.9)), url('/api/placeholder/1200/400');
+            background-size: cover;
+            color: white;
+            padding: 3rem 0;
+        }
+
+        .coupon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .coupon-card {
+            background: white;
+            color: var(--primary-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer ul {
+            list-style: none;
+        }
+
+        .footer li {
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .category-container {
+                padding: 0 1rem;
+            }
+
+            .event-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>みんなの科学館</h1>
+            <nav class="nav-menu">
+                <a href="#events">イベント</a>
+                <a href="#museums">施設一覧</a>
+                <a href="#tickets">チケット</a>
+                <a href="#news">お知らせ</a>
+                <a href="#mypage">マイページ</a>
+            </nav>
+        </div>
+    </header>
+
+    <nav class="category-nav">
+        <div class="category-container">
+            <div class="category-item">プラネタリウム</div>
+            <div class="category-item">特別展</div>
+            <div class="category-item">実験教室</div>
+            <div class="category-item">工作教室</div>
+            <div class="category-item">自然観察</div>
+            <div class="category-item">講演会</div>
+            <div class="category-item">体験学習</div>
+            <div class="category-item">企画展</div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>科学の世界へようこそ</h1>
+        <p>全国の科学館の情報をまとめてチェック！</p>
+        <div class="search-bar">
+            <input type="text" placeholder="施設名・イベントを検索">
+            <input type="text" placeholder="日付">
+            <button class="btn">検索</button>
+        </div>
+    </section>
+
+    <section class="featured-section">
+        <div class="section-header">
+            <h2 class="section-title">おすすめイベント</h2>
+            <a href="#" class="view-all">すべて見る →</a>
+        </div>
+        <div class="event-grid">
+            <div class="event-card">
+                <div class="event-image">
+                    <img src="/api/placeholder/280/200" alt="イベント1">
+                    <div class="event-badge members-only">会員限定</div>
+                </div>
+                <div class="event-content">
+                    <div class="event-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> 東京</span>
+                        <span><i class="fas fa-calendar"></i> 4/1-5/31</span>
+                    </div>
+                    <h3 class="event-title">宇宙展2024</h3>
+                    <p>最新の宇宙探査の成果を体験できる特別展</p>
+                    <button class="btn">予約する</button>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-image">
+                    <img src="/api/placeholder/280/200" alt="イベント2">
+                    <div class="event-badge available-now">すぐ予約可</div>
+                </div>
+                <div class="event-content">
+                    <div class="event-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> 大阪</span>
+                        <span><i class="fas fa-calendar"></i> 4/15-6/15</span>
+                    </div>
+                    <h3 class="event-title">恐竜化石展</h3>
+                    <p>世界最大級の恐竜化石コレクション</p>
+                    <button class="btn">予約する</button>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-image">
+                    <img src="/api/placeholder/280/200" alt="イベント3">
+                </div>
+                <div class="event-content">
+                    <div class="event-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> 名古屋</span>
+                        <span><i class="fas fa-calendar"></i> 4/20-4/21</span>
+                    </div>
+                    <h3 class="event-title">科学実験ショー</h3>
+                    <p>驚きと発見がいっぱいの実験ショー</p>
+                    <button class="btn">予約する</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="featured-section">
+        <div class="section-header">
+            <h2 class="section-title">ランキング</h2>
+            <a href="#" class="view-all">すべて見る →</a>
+        </div>
+        <div class="event-grid">
+            <div class="event-card">
+                <div class="event-image">
+                    <img src="/api/placeholder/280/200" alt="イベント1">
+                    <div class="event-badge members-only">会員限定</div>
+                </div>
+                <div class="event-content">
+                    <div class="event-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> 東京</span>
+                        <span><i class="fas fa-calendar"></i> 4/1-5/31</span>
+                    </div>
+                    <h3 class="event-title">宇宙展2024</h3>
+                    <p>最新の宇宙探査の成果を体験できる特別展</p>
+                    <button class="btn">予約する</button>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-image">
+                    <img src="/api/placeholder/280/200" alt="イベント2">
+                    <div class="event-badge available-now">すぐ予約可</div>
+                </div>
+                <div class="event-content">
+                    <div class="event-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> 大阪</span>
+                        <span><i class="fas fa-calendar"></i> 4/15-6/15</span>
+                    </div>
+                    <h3 class="event-title">恐竜化石展</h3>
+                    <p>世界最大級の恐竜化石コレクション</p>
+                    <button class="btn">予約する</button>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-image">
+                    <img src="/api/placeholder/280/200" alt="イベント3">
+                </div>
+                <div class="event-content">
+                    <div class="event-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> 名古屋</span>
+                        <span><i class="fas fa-calendar"></i> 4/20-4/21</span>
+                    </div>
+                    <h3 class="event-title">科学実験ショー</h3>
+                    <p>驚きと発見がいっぱいの実験ショー</p>
+                    <button class="btn">予約する</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="region-section">
+        <div class="featured-section">
+            <div class="section-header">
+                <h2 class="section-title">地域で絞り込む</h2>
+                <a href="#" class="view-all">すべて見る →</a>
+            </div>
+            <div class="region-tabs">
+                <div class="region-tab active">関東</div>
+                <div class="region-tab">関西</div>
+                <div class="region-tab">中部</div>
+                <div class="region-tab">北海道</div>
+                <div class="region-tab">東北</div>
+                <div class="region-tab">中国</div>
+                <div class="region-tab">四国</div>
+                <div class="region-tab">九州</div>
+            </div>
+            <div class="event-grid">
+                <!-- 関東地域のイベント -->
+                <div class="event-card">
+                    <div class="event-image">

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>施設一覧 - みんなの科学館</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2C3E50;
+            --secondary-color: #3498DB;
+            --accent-color: #E74C3C;
+            --light-gray: #ECF0F1;
+            --success-color: #27AE60;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: var(--light-gray);
+        }
+
+        .header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .page-title {
+            background: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .page-title-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .filter-section {
+            max-width: 1200px;
+            margin: 0 auto 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-item select, .filter-item input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .museum-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+
+        .museum-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .museum-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .museum-image {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .museum-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--success-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .museum-content {
+            padding: 1.5rem;
+        }
+
+        .museum-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .museum-info {
+            margin-bottom: 1rem;
+        }
+
+        .museum-info p {
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .museum-info i {
+            color: var(--secondary-color);
+            width: 20px;
+        }
+
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tag {
+            background: var(--light-gray);
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.875rem;
+        }
+
+        .btn {
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer {
+            background: var(--primary-color);
+            color: white;
+            padding: 3rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .pagination {
+            max-width: 1200px;
+            margin: 2rem auto;
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0 2rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--secondary-color);
+            background: white;
+            color: var(--secondary-color);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .pagination button.active {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .museum-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>みんなの科学館</h1>
+            <nav class="nav-menu">
+                <a href="#events">イベント</a>
+                <a href="#museums">施設一覧</a>
+                <a href="#tickets">チケット</a>
+                <a href="#news">お知らせ</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="page-title">
+        <div class="page-title-content">
+            <h1>施設一覧</h1>
+            <p>全国の科学館をご紹介します</p>
+        </div>
+    </div>
+
+    <section class="filter-section">
+        <div class="filter-grid">
+            <div class="filter-item">
+                <select>
+                    <option>エリアで絞り込み</option>
+                    <option>北海道・東北</option>
+                    <option>関東</option>
+                    <option>中部</option>
+                    <option>関西</option>
+                    <option>中国・四国</option>
+                    <option>九州・沖縄</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <select>
+                    <option>施設の特徴</option>
+                    <option>プラネタリウム</option>
+                    <option>実験教室</option>
+                    <option>体験型展示</option>
+                    <option>天体観測</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <input type="text" placeholder="キーワードで検索">
+            </div>
+        </div>
+    </section>
+
+    <main class="museum-grid">
+        <div class="museum-card">
+            <div class="museum-image">
+                <img src="/api/placeholder/350/200" alt="東京科学館">
+                <span class="status-badge">開館中</span>
+            </div>
+            <div class="museum-content">
+                <h2 class="museum-title">東京科学館</h2>
+                <div class="museum-info">
+                    <p><i class="fas fa-map-marker-alt"></i> 東京都千代田区</p>
+                    <p><i class="fas fa-clock"></i> 9:30-17:00（最終入館 16:30）</p>
+                    <p><i class="fas fa-yen-sign"></i> 大人 1,500円 / 子供 600円</p>
+                </div>
+                <div class="tag-container">
+                    <span class="tag">プラネタリウム</span>
+                    <span class="tag">実験教室</span>
+                    <span class="tag">体験型展示</span>
+                </div>
+                <div class="btn-group">
+                    <a href="#" class="btn">詳細を見る</a>
+                    <a href="#" class="btn">チケット予約</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="museum-card">
+            <div class="museum-image">
+                <img src="/api/placeholder/350/200" alt="大阪科学館">
+                <span class="status-badge">開館中</span>
+            </div>
+            <div class="museum-content">
+                <h2 class="museum-title">大阪科学館</h2>
+                <div class="museum-info">
+                    <p><i class="fas fa-map-marker-alt"></i> 大阪府大阪市</p>
+                    <p><i class="fas fa-clock"></i> 9:30-17:00（最終入館 16:30）</p>
+                    <p><i class="fas fa-yen-sign"></i> 大人 1,400円 / 子供 500円</p>
+                </div>
+                <div class="tag-container">
+                    <span class="tag">天体観測</span>
+                    <span class="tag">実験教室</span>
+                    <span class="tag">サイエンスショー</span>
+                </div>
+                <div class="btn-group">
+                    <a href="#" class="btn">詳細を見る</a>
+                    <a href="#" class="btn">チケット予約</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="museum-card">
+            <div class="museum-image">
+                <img src="/api/placeholder/350/200" alt="名古屋科学館">
+                <span class="status-badge">開館中</span>
+            </div>
+            <div class="museum-content">
+                <h2 class="museum-title">名古屋科学館</h2>
+                <div class="museum-info">
+                    <p><i class="fas fa-map-marker-alt"></i> 愛知県名古屋市</p>
+                    <p><i class="fas fa-clock"></i> 9:30-17:00（最終入館 16:30）</p>
+                    <p><i class="fas fa-yen-sign"></i> 大人 1,300円 / 子供 500円</p>
+                </div>
+                <div class="tag-container">
+                    <span class="tag">プラネタリウム</span>
+                    <span class="tag">実験教室</span>
+                    <span class="tag">企画展</span>
+                </div>
+                <div class="btn-group">
+                    <a href="#" class="btn">詳細を見る</a>
+                    <a href="#" class="btn">チケット予約</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="pagination">
+        <button class="active">1</button>
+        <button>2</button>
+        <button>3</button>
+        <button>4</button>
+        <button>5</button>
+        <button>次へ</button>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div>
+                <h3>みんなの科学館</h3>
+                <p>全国の科学館をつなぐポータルサイト</p>
+            </div>
+            <div>
+                <h3>メニュー</h3>
+                <ul>
+                    <li><a href="#events">イベント</a></li>
+                    <li><a href="#museums">施設一覧</a></li>
+                    <li><a href="#tickets">チケット</a></li>
+                    <li><a href="#news">お知らせ</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3>お問い合わせ</h3>
+                <p>Tel: 0120-XXX-XXX</p>
+                <p>Email: info@science-museums.jp</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

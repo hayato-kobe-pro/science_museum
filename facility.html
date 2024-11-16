@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>東京科学館 - みんなの科学館</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <style>
+        /* 前回と同じベース設定は省略 */
+        :root {
+            --primary-color: #2C3E50;
+            --secondary-color: #3498DB;
+            --accent-color: #E74C3C;
+            --light-gray: #ECF0F1;
+            --success-color: #27AE60;
+        }
+
+        /* ベーススタイル */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: var(--light-gray);
+        }
+
+        /* ヘッダー関連のスタイルは前回と同じ */
+        .header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 0;
+        }
+
+        /* メインビジュアル */
+        .museum-hero {
+            position: relative;
+            height: 400px;
+            background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)),
+                        url('/api/placeholder/1200/400');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+
+        /* クイック情報バー */
+        .quick-info {
+            background: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .quick-info-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quick-info-items {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .quick-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        /* 左カラム */
+        .main-column {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 右カラム（チケット予約） */
+        .sidebar {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+        }
+
+        /* タブナビゲーション */
+        .tab-nav {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .tab-nav button {
+            padding: 1rem 2rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            position: relative;
+        }
+
+        .tab-nav button.active {
+            color: var(--secondary-color);
+        }
+
+        .tab-nav button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--secondary-color);
+        }
+
+        /* イベントカレンダー */
+        .calendar {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            background: var(--secondary-color);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #ddd;
+        }
+
+        .calendar-cell {
+            background: white;
+            padding: 0.5rem;
+            min-height: 100px;
+            position: relative;
+        }
+
+        .calendar-cell.has-event {
+            background: #e3f2fd;
+        }
+
+        .event-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+
+        /* イベントリスト */
+        .event-list {
+            margin-top: 2rem;
+        }
+
+        .event-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .event-date {
+            text-align: center;
+            padding: 0.5rem;
+            background: var(--light-gray);
+            border-radius: 4px;
+        }
+
+        /* チケット予約フォーム */
+        .ticket-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group select, .form-group input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .price-summary {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: 4px;
+        }
+
+        .btn {
+            background: var(--secondary-color);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-accent {
+            background: var(--accent-color);
+        }
+
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-info-items {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .calendar-grid {
+                font-size: 0.8rem;
+            }
+
+            .calendar-cell {
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>みんなの科学館</h1>
+            <nav class="nav-menu">
+                <a href="#events">イベント</a>
+                <a href="#museums">施設一覧</a>
+                <a href="#tickets">チケット</a>
+                <a href="#news">お知らせ</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="museum-hero">
+        <div class="hero-content">
+            <h1>東京科学館</h1>
+            <p>最新の科学技術と自然の不思議を体験しよう</p>
+        </div>
+    </div>
+
+    <div class="quick-info">
+        <div class="quick-info-content">
+            <div class="quick-info-items">
+                <div class="quick-info-item">
+                    <i class="fas fa-clock"></i>
+                    <span>開館中 9:30-17:00</span>
+                </div>
+                <div class="quick-info-item">
+                    <i class="fas fa-yen-sign"></i>
+                    <span>入館料: 大人1,500円／子供600円</span>
+                </div>
+                <div class="quick-info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>東京都千代田区</span>
+                </div>
+            </div>
+            <button class="btn">チケット予約</button>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div class="main-column">
+            <div class="tab-nav">
+                <button class="active">施設案内</button>
+                <button>イベント</button>
+                <button>アクセス</button>
+            </div>
+
+            <section id="calendar">
+                <h2>イベントカレンダー</h2>
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <button>&lt;</button>
+                        <h3>2024年4月</h3>
+                        <button>&gt;</button>
+                    </div>
+                    <div class="calendar-grid">
+                        <!-- カレンダーのセル（例として一部表示） -->
+                        <div class="calendar-cell">1</div>
+                        <div class="calendar-cell has-event">2
+                            <div class="event-dot"></div>
+                        </div>
+                        <div class="calendar-cell">3</div>
+                        <!-- ... -->
+                    </div>
+                </div>
+
+                <div class="event-list">
+                    <h3>今月のイベント</h3>
+                    <div class="event-item">
+                        <div class="event-date">
+                            <div>4/2</div>
+                            <div>火</div>
+                        </div>
+                        <div>
+                            <h4>宇宙展2024</h4>
+                            <p>最新の宇宙探査についての特別展示</p>
+                        </div>
+                        <button class="btn">詳細</button>
+                    </div>
+                    <div class="event-item">
+                        <div class="event-date">
+                            <div>4/15</div>
+                            <div>月</div>
+                        </div>
+                        <div>
+                            <h4>科学実験ショー</h4>
+                            <p>楽しく学べる科学実験をライブで実演</p>
+                        </div>
+                        <button class="btn">詳細</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <aside class="sidebar">
+            <h2>チケット予約</h2>
+            <form class="ticket-form">
+                <div class="form-group">
+                    <label>来館日</label>
+                    <input type="date">
+                </div>
+                <div class="form-group">
+                    <label>大人（中学生以上）</label>
+                    <select>
+                        <option>0名</option>
+                        <option>1名</option>
+                        <option>2名</option>
+                        <option>3名</option>
+                        <option>4名</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>子供（4歳〜小学生）</label>
+                    <select>
+                        <option>0名</option>
+                        <option>1名</option>
+                        <option>2名</option>
+                        <option>3名</option>
+                        <option>4名</option>
+                    </select>
+                </div>
+                
+                <div class="price-summary">
+                    <h3>料金内訳</h3>
+                    <p>大人 1名: 1,500円</p>
+                    <p>子供 2名: 1,200円</p>
+                    <p>合計: 2,700円</p>
+                </div>
+
+                <button type="submit" class="btn btn-large btn-accent">予約する</button>
+            </form>
+        </aside>
+    </main>
+
+    <footer class="footer">
+        <!-- フッターの内容は前回と同じ -->
+    </footer>
+</body>
+</html>
