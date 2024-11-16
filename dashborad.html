@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チケット販売分析 - みんなの科学館</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2C3E50;
+            --secondary-color: #3498DB;
+            --success-color: #2ECC71;
+            --warning-color: #F1C40F;
+            --danger-color: #E74C3C;
+            --light-gray: #ECF0F1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .sidebar h1 {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.75rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .date-filter {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .date-filter select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        /* カード */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .change-positive {
+            color: var(--success-color);
+        }
+
+        .change-negative {
+            color: var(--danger-color);
+        }
+
+        /* グラフセクション */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        /* テーブル */
+        .data-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <h1>みんなの科学館</h1>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="fas fa-chart-line"></i>
+                            ダッシュボード
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-ticket-alt"></i>
+                            チケット分析
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-users"></i>
+                            ユーザー分析
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-cog"></i>
+                            設定
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h2>チケット販売分析</h2>
+                <div class="date-filter">
+                    <select id="periodSelect">
+                        <option value="7days">過去7日間</option>
+                        <option value="30days">過去30日間</option>
+                        <option value="90days">過去90日間</option>
+                        <option value="custom">カスタム</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">総クリック数</div>
+                    <div class="metric-value">12,458</div>
+                    <div class="metric-change change-positive">
+                        <i class="fas fa-arrow-up"></i>
+                        8.3% vs 前期間
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">コンバージョン率</div>
+                    <div class="metric-value">4.2%</div>
+                    <div class="metric-change change-positive">
+                        <i class="fas fa-arrow-up"></i>
+                        0.5% vs 前期間
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">平均滞在時間</div>
+                    <div class="metric-value">2:45</div>
+                    <div class="metric-change change-negative">
+                        <i class="fas fa-arrow-down"></i>
+                        0:15 vs 前期間
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">直帰率</div>
+                    <div class="metric-value">32.5%</div>
+                    <div class="metric-change change-positive">
+                        <i class="fas fa-arrow-down"></i>
+                        2.1% vs 前期間
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>プレイガイド別遷移数</h3>
+                        <select id="chartPeriod1">
+                            <option value="daily">日次</option>
+                            <option value="weekly">週次</option>
+                            <option value="monthly">月次</option>
+                        </select>
+                    </div>
+                    <canvas id="transitionChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>時間帯別アクセス数</h3>
+                        <select id="chartPeriod2">
+                            <option value="daily">日次</option>
+                            <option value="weekly">週次</option>
+                            <option value="monthly">月次</option>
+                        </select>
+                    </div>
+                    <canvas id="timeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>イベント名</th>
+                            <th>プレイガイド</th>
+                            <th>遷移数</th>
+                            <th>コンバージョン率</th>
+                            <th>平均滞在時間</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>宇宙展2024</td>
+                            <td>ぴあ</td>
+                            <td>3,245</td>
+                            <td>5.2%</td>
+                            <td>3:12</td>
+                        </tr>
+                        <tr>
+                            <td>宇宙展2024</td>
+                            <td>イープラス</td>
+                            <td>2,856</td>
+                            <td>4.8%</td>
+                            <td>2:45</td>
+                        </tr>
+                        <tr>
+                            <td>恐竜化石展</td>
+                            <td>ローソンチケット</td>
+                            <td>2,124</td>
+                            <td>3.9%</td>
+                            <td>2:58</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // プレイガイド別遷移数グラフ
+        const transitionCtx = document.getElementById('transitionChart').getContext('2d');
+        new Chart(transitionCtx, {
+            type: 'line',
+            data: {
+                labels: ['1日', '2日', '3日', '4日', '5日', '6日', '7日'],
+                datasets: [{
+                    label: 'ぴあ',
+                    data: [450, 420, 480, 520, 490, 540, 510],
+                    borderColor: '#3498DB',
+                    tension: 0.4
+                },
+                {
+                    label: 'イープラス',
+                    data: [380, 400, 420, 390, 410, 430, 400],
+                    borderColor: '#2ECC71',
+                    tension: 0.4
+                },
+                {
+                    label: 'ローソンチケット',
+                    data: [300, 320, 340, 310, 330, 350, 320],
+                    borderColor: '#E74C3C',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // 時間帯別アクセス数グラフ
+        const timeCtx = document.getElementById('timeChart').getContext('2d');
+        new Chart(timeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['6時', '9時', '12時', '15時', '18時', '21時', '24時'],
+                datasets: [{
+                    label: 'アクセス数',
+                    data: [120, 250, 380, 420, 480, 350, 180],
+                    backgroundColor: '#3498DB'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // 期間選択の変更イベント
+        document.getElementById('periodSelect').addEventListener('change', function(e) {
+            // 期間変更時の処理を実装
+            console.log('Period changed:', e.target.value);
+        });
+
+        // グラフ期間の変更イベント
+        document.getElementById('chartPeriod1').addEventListener('change', function(e) {
+            // グラフ期間変更時の処理を実装
+            console.log('Chart 1 period changed:', e.target.value);
+        });
+
+        document.getElementById('chartPeriod2').addEventListener('change', function(e) {
+            // グラフ期間変更時の処理を実装
+            console.log('Chart 2 period changed:', e.target.value);
+        });
+    </script>
+</body>
+</html>
